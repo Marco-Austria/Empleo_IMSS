@@ -1,0 +1,1916 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta http-equiv="Cache-Control" content="no-cache">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+<title>Geoportal · Puestos de Trabajo Afiliados al IMSS</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+/* Arial font */
+
+.hm-wrap{font-family:Arial,sans-serif;overflow-x:auto}
+.hm-table{border-collapse:separate;border-spacing:3px;font-family:inherit;font-size:.73rem;width:100%;min-width:860px}
+.hm-table thead th{
+  padding:.35rem .5rem;text-align:center;font-weight:500;font-size:.6rem;
+  text-transform:uppercase;letter-spacing:.07em;color:#2E6B2E;
+  background:transparent;border:none;
+}
+.hm-table .hm-year{
+  font-weight:500;color:#0F2D1A;background:transparent;
+  border:none;padding:.3rem .6rem .3rem 0;
+  text-align:left;white-space:nowrap;font-size:.72rem;
+  border-right:2px solid #C8DFA0;padding-right:.8rem;
+}
+.hm-cell{
+  padding:.45rem .3rem;text-align:center;font-weight:400;font-size:.72rem;
+  border:none;cursor:default;border-radius:7px;
+  transition:transform .12s,box-shadow .12s;
+  white-space:nowrap;min-width:54px;
+  box-shadow:0 1px 3px rgba(0,0,0,.08);
+}
+.hm-cell:hover{transform:scale(1.08);box-shadow:0 3px 8px rgba(0,0,0,.18);z-index:2;position:relative}
+.hm-cell.hm-selected{outline:2.5px solid #0F2D1A;outline-offset:1px;transform:scale(1.05)}
+.hm-cell.hm-nodata{background:#f0f0f0;color:#bbb;font-weight:400;font-size:.68rem;box-shadow:none;border-radius:7px}
+.hm-g1{background:#7BBF44;color:#fff}
+.hm-g2{background:#2E6B2E;color:#fff}
+.hm-g3{background:#0F2D1A;color:#C8DFA0}
+.hm-r1{background:#FCBFA1;color:#5C1A0A}
+.hm-r2{background:#C1440E;color:#fff}
+.hm-r3{background:#5C1A0A;color:#FCBFA1}
+.hm-zero{background:#e8f4e8;color:#2E6B2E;font-weight:600}
+.hm-prom-sep{
+  margin-left:12px;
+  border-left:3px solid rgba(46,107,46,.25);
+  padding-left:6px !important;
+  min-width:52px;
+}
+.hm-avg-cell{
+  padding:.45rem .4rem;text-align:center;font-weight:500;font-size:.72rem;
+  border-radius:7px;white-space:nowrap;min-width:54px;
+  box-shadow:0 1px 3px rgba(0,0,0,.1);
+}
+.hm-section-header{
+  font-size:.7rem;font-weight:500;color:#0F2D1A;text-transform:uppercase;
+  letter-spacing:.08em;padding:.5rem 0 .2rem 0;display:block;
+}
+.hm-scale-row{
+  display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;
+  margin-top:.8rem;font-size:.63rem;font-weight:400;
+  font-family:Arial,sans-serif;
+}
+.hm-scale-chip{
+  display:flex;align-items:center;gap:.3rem;
+  background:var(--off-white);border:1px solid var(--sand-dark);
+  border-radius:20px;padding:.2rem .55rem;
+}
+.hm-scale-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE DESIGN · 4 BREAKPOINTS
+   Estrategia: Desktop-first con ajustes progresivos hacia móvil
+   Codificación: UTF-8 | Idioma: Español
+   Caracteres especiales preservados: á é í ó ú ñ ü ¿ ¡
+═══════════════════════════════════════════════════════════════ */
+
+/* ── TABLET LANDSCAPE (≤ 1200px) ──────────────────────────────── */
+@media screen and (max-width:1200px){
+  #main-layout{
+    grid-template-columns:280px minmax(0,1fr) 290px;
+    gap:.7rem;
+  }
+  #kpis-row{gap:.6rem;}
+  .kpi-value{font-size:1.1rem;}
+}
+
+/* ── TABLET PORTRAIT (≤ 1024px) ───────────────────────────────── */
+@media screen and (max-width:1024px){
+  header{flex-wrap:wrap;padding:.55rem .9rem;gap:.4rem;}
+  .hd-text h1{font-size:1.05rem;}
+  .hd-group{margin-left:0;width:100%;flex-wrap:wrap;}
+  .hd-fp select{min-width:95px;}
+
+  #kpis-row{
+    grid-template-columns:1fr 1fr;
+    gap:.55rem;padding:.6rem .9rem .5rem;
+  }
+  #kpis-row .kpi-card:last-child{grid-column:1/-1;}
+  .kpi-value{font-size:1rem;}
+
+  #main-layout{
+    grid-template-columns:1fr 1fr;
+    grid-template-rows:auto auto;
+    gap:.65rem;padding:0 .9rem .7rem;
+    align-items:start;
+  }
+  #left-panel{grid-column:1/2;grid-row:2/3;}
+  #map-panel{grid-column:1/-1;grid-row:1/2;}
+  #right-panel{grid-column:2/3;grid-row:2/3;}
+  #map-leaflet{height:360px!important;}
+  .map-legend-box{bottom:22px;left:6px;min-width:150px;}
+
+  #bottom-row{
+    grid-template-columns:1fr;
+    gap:.65rem;padding:0 .9rem .8rem;
+  }
+  .chart-mini canvas{max-height:145px;}
+  .var-card canvas{height:190px!important;}
+  #heatmap-section{padding:0 .9rem .9rem;}
+}
+
+/* ── MÓVIL GRANDE (≤ 767px) ───────────────────────────────────── */
+@media screen and (max-width:767px){
+  header{padding:.5rem .75rem;min-height:auto;}
+  .hd-logo{width:28px;height:28px;font-size:1rem;flex-shrink:0;}
+  .hd-text h1{font-size:.9rem;line-height:1.2;}
+  .hd-text p{font-size:.58rem;}
+  .hd-sep{display:none;}
+  .hd-group{
+    order:3;width:100%;margin-left:0;
+    display:grid;
+    grid-template-columns:1fr 1fr auto auto;
+    gap:.3rem;align-items:end;
+  }
+  .hd-fp:nth-child(3){grid-column:1/3;}
+  .hd-fp label{font-size:.58rem;}
+  .hd-fp select{font-size:.72rem;padding:.26rem .4rem;}
+  .hd-btn{font-size:.7rem;padding:.26rem .6rem;}
+  .hd-btn.primary{grid-column:3/4;}
+
+  #kpis-row{
+    grid-template-columns:1fr;
+    gap:.45rem;padding:.45rem .75rem .4rem;
+  }
+  #kpis-row .kpi-card:last-child{grid-column:auto;}
+  .kpi-card{padding:.45rem .75rem;}
+  .kpi-value{font-size:.95rem;}
+  .kpi-sub-row{gap:.4rem;}
+
+  #main-layout{
+    display:flex;flex-direction:column;
+    gap:.6rem;padding:0 .75rem .6rem;
+  }
+  #left-panel,#map-panel,#right-panel{width:100%;}
+  #map-leaflet{height:280px!important;}
+  .map-legend-box{min-width:140px;padding:.4rem .5rem;}
+  .map-legend-box .leg-title{font-size:.5rem;}
+  .map-legend-box .leg-row{font-size:.6rem;margin-bottom:.2rem;}
+  .leg-swatch2{width:16px;height:10px;}
+
+  #map-ctrls{flex-wrap:wrap;gap:.35rem;padding:.4rem .7rem;}
+  #map-ctrls select{font-size:.72rem;}
+  #map-period-tag{font-size:.6rem;}
+
+  #bottom-row{
+    display:flex;flex-direction:column;
+    gap:.6rem;padding:0 .75rem .7rem;
+  }
+  .panel-hdr{padding:.45rem .75rem;}
+  .panel-hdr h3{font-size:.78rem;}
+  .panel-body{padding:.6rem .75rem;}
+  .chart-mini canvas{max-height:120px;}
+  .var-card canvas{height:170px!important;}
+  .var-card-title{font-size:.65rem;}
+  #sector-table-wrap{max-height:240px;}
+  #sector-table{font-size:.68rem;}
+
+  #heatmap-section{padding:0 .75rem .75rem;}
+  .hm-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .hm-table{min-width:680px;font-size:.6rem;}
+  .hm-cell{min-width:32px;padding:.25rem .15rem;border-radius:5px;}
+  .hm-year{font-size:.62rem;padding-right:.5rem;}
+  .hm-scale-row{gap:.3rem;margin-top:.6rem;}
+  .hm-scale-chip{padding:.15rem .4rem;font-size:.6rem;}
+  .hm-scale-dot{width:10px;height:10px;}
+
+  #heatmap-section .panel-hdr{flex-wrap:wrap;gap:.3rem;}
+  #heatmap-section .panel-hdr h3{font-size:.72rem;}
+  #hm-var{font-size:.72rem;}
+  #heatmap-section .hd-btn,
+  #heatmap-section button{font-size:.68rem;padding:.22rem .55rem;}
+
+  footer{font-size:.62rem;padding:.5rem .75rem;text-align:center;}
+}
+
+/* ── MÓVIL PEQUEÑO (≤ 480px) ──────────────────────────────────── */
+@media screen and (max-width:480px){
+  .hd-text h1{font-size:.78rem;}
+  .hd-group{
+    grid-template-columns:1fr 1fr;
+    gap:.3rem;
+  }
+  .hd-fp:nth-child(1){grid-column:1/2;}
+  .hd-fp:nth-child(2){grid-column:2/3;}
+  .hd-fp:nth-child(3){grid-column:1/-1;}
+  .hd-btn.primary,.hd-btn:not(.primary){
+    grid-column:auto;width:100%;justify-content:center;
+  }
+  .hd-group .hd-right-btns{
+    grid-column:1/-1;display:flex;gap:.3rem;width:100%;
+  }
+  #map-leaflet{height:240px!important;}
+  .kpi-value{font-size:.88rem;}
+  .chart-mini canvas{max-height:100px;}
+  .var-card canvas{height:150px!important;}
+  .hm-table{min-width:600px;font-size:.55rem;}
+  .hm-cell{min-width:28px;border-radius:4px;}
+}
+
+/* ── CORRECCIÓN LEAFLET EN TODOS LOS TAMAÑOS ──────────────────── */
+#map-leaflet .leaflet-interactive{cursor:pointer!important;}
+.leaflet-container{font-family:Arial,sans-serif!important;}
+.leaflet-tooltip{max-width:200px;word-break:break-word;}
+
+</style>
+<style>
+:root{
+--terra:#2E6B2E;--terra-dark:#0F2D1A;--terra-med:#3D8A3D;--terra-light:#7BBF44;--terra-pale:#C8DFA0;
+--sand:#EAF3DC;--sand-dark:#C8DFA0;--cream:#F3F8EC;
+--ink:#0F2D1A;--ink-med:#2E6B2E;--muted:#4A7A3A;--muted-light:#7BBF44;
+--white:#FFFFFF;--off-white:#F7FBF0;
+--green1:#C8DFA0;--green2:#8FBF5A;--green3:#2E6B2E;
+--shadow-sm:0 1px 3px rgba(15,45,26,.10);
+--shadow-md:0 4px 12px rgba(15,45,26,.13);
+--radius:10px;--radius-sm:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:Arial,sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;overflow-x:hidden}
+
+header{
+  background:linear-gradient(135deg,#0F2D1A 0%,#2E6B2E 55%,#3D8A3D 100%);
+  color:white;padding:.6rem 1.2rem;
+  display:flex;align-items:center;gap:.9rem;flex-wrap:wrap;
+  box-shadow:0 2px 10px rgba(139,46,0,.4);position:sticky;top:0;z-index:1000;
+  min-height:64px;
+}
+.hd-logo{width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.hd-text{flex-shrink:0}
+.hd-text h1{font-family:Arial,sans-serif;font-size:1.35rem;letter-spacing:.01em;line-height:1.2;font-weight:700}
+.hd-text p{font-size:.65rem;opacity:.72;margin-top:.08rem;letter-spacing:.04em}
+.hd-sep{display:none}
+.hd-group{display:flex;align-items:center;gap:.55rem;margin-left:auto;flex-shrink:0}
+.hd-filters{display:flex;align-items:flex-end;gap:.55rem;flex-wrap:wrap}
+.hd-fp{display:flex;flex-direction:column;gap:.18rem}
+.hd-fp label{font-size:.6rem;font-weight:500;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.07em}
+.hd-fp select{
+  border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.12);color:white;
+  padding:.3rem .5rem;border-radius:var(--radius-sm);
+  font-family:Arial,sans-serif;font-size:.78rem;cursor:pointer;min-width:110px;
+  transition:border-color .2s;appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,.7)'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right .45rem center;padding-right:1.4rem;
+}
+.hd-fp select option{background:#8B2E00;color:white}
+.hd-fp select:focus{outline:none;border-color:rgba(255,255,255,.7)}
+.hd-btn{
+  background:rgba(255,255,255,.2);color:white;border:1.5px solid rgba(255,255,255,.35);
+  padding:.32rem .85rem;border-radius:var(--radius-sm);
+  font-family:Arial,sans-serif;font-size:.77rem;font-weight:600;
+  cursor:pointer;transition:all .2s;letter-spacing:.02em;white-space:nowrap;
+  display:flex;align-items:center;gap:.3rem;
+}
+.hd-btn:hover{background:rgba(255,255,255,.32);border-color:rgba(255,255,255,.6)}
+.hd-btn.primary{background:white;color:#0F2D1A;border-color:white}
+.hd-btn.primary:hover{background:var(--sand);border-color:var(--sand)}
+.hd-right{display:none}
+.hd-right-btns{display:flex;align-items:center;gap:.45rem;flex-shrink:0}
+.hd-badge{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);
+  border-radius:20px;padding:.2rem .6rem;font-size:.65rem;letter-spacing:.04em}
+#hd-status{font-size:.67rem;opacity:.75;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#last-update{font-size:.65rem;opacity:.6}
+
+#status-bar{display:none!important;padding:.4rem 1.2rem;font-size:.77rem;border-bottom:1px solid transparent}
+#status-bar.ok{display:block;background:#eafbf0;color:#1a6b3c;border-color:#b6e8cc}
+#status-bar.err{display:block;background:#fdf0ee;color:#8B2E00;border-color:#f5c4b5}
+#status-bar.info{display:block;background:#eef4fd;color:#1a4a8b;border-color:#bcd4f5}
+
+#kpis-row{display:grid;grid-template-columns:repeat(3,1fr);gap:.65rem;padding:.6rem 1.2rem .5rem}
+.kpi-card{
+  background:var(--white);border-radius:var(--radius);padding:.55rem .85rem;
+  box-shadow:var(--shadow-sm);border-top:3px solid #2E6B2E;
+  position:relative;overflow:hidden;transition:box-shadow .2s;
+  text-align:center;
+}
+.kpi-card:hover{box-shadow:var(--shadow-md)}
+.kpi-card::after{content:'';position:absolute;top:-18px;right:-18px;width:72px;height:72px;border-radius:50%;background:radial-gradient(circle,var(--terra-pale) 0%,transparent 70%);opacity:.55}
+.kpi-card.green{border-top-color:#7BBF44}.kpi-card.green::after{background:radial-gradient(circle,#d4f0e0 0%,transparent 70%)}
+.kpi-card.blue{border-top-color:#8FBF5A}.kpi-card.blue::after{background:radial-gradient(circle,#d0e6fb 0%,transparent 70%)}
+.kpi-top{display:flex;align-items:center;justify-content:center;gap:.35rem;margin-bottom:.2rem}
+.kpi-icon{font-size:.82rem;opacity:.75;flex-shrink:0}
+.kpi-label{font-size:.65rem;font-weight:500;color:var(--ink-med);text-transform:uppercase;letter-spacing:.06em}
+.kpi-value{font-family:Arial,sans-serif;font-size:1.15rem;color:var(--ink);line-height:1;font-weight:400}
+.kpi-sub-row{display:flex;gap:.5rem;margin-top:.3rem;padding-top:.3rem;border-top:1px solid var(--sand)}
+.kpi-sub{flex:1;text-align:center;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:.3rem}
+.kpi-sub-label{font-size:.54rem;font-weight:500;color:var(--ink-med);text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;justify-content:center;gap:.18rem;margin-bottom:0}
+.kpi-sub-val{font-size:.75rem;font-weight:400;color:var(--ink-med)}
+
+#main-layout{
+  display:grid;
+  grid-template-columns:330px minmax(0,1fr) 350px;
+  gap:.9rem;padding:0 1.2rem .9rem;
+  align-items:stretch;
+}
+.panel{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden}
+.panel-hdr{
+  padding:.55rem .9rem;
+  display:flex;align-items:center;gap:.45rem;
+  background:#ddeedd;
+  border-bottom:2px solid #3a7a3a;
+}
+.panel-hdr h3{font-family:Arial,sans-serif;font-size:.84rem;color:#0F2D1A;font-weight:500}
+.panel-icon{font-size:.85rem;opacity:.7}
+
+#left-panel{display:flex;flex-direction:column;gap:.6rem}
+#left-panel .panel-body{padding:.3rem .7rem .5rem;display:flex;flex-direction:column;gap:.45rem}
+.chart-mini{background:var(--off-white);border-radius:var(--radius-sm);padding:.45rem .65rem;border:1px solid var(--sand)}
+.chart-mini-title{font-size:.63rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.25rem}
+.chart-mini canvas{max-height:230px;width:100%!important;display:block}
+
+#map-panel{display:flex;flex-direction:column;}
+#map-ctrls{
+  padding:.5rem .9rem;border-bottom:1px solid var(--sand);
+  display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;
+  background:var(--off-white);
+}
+#map-ctrls label{font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+#map-ctrls select{
+  border:1.5px solid var(--sand-dark);background:var(--white);
+  padding:.28rem .5rem;border-radius:var(--radius-sm);
+  font-family:Arial,sans-serif;font-size:.76rem;color:var(--ink);cursor:pointer;
+}
+#map-ctrls select:focus{outline:none;border-color:var(--terra)}
+#map-period-tag{background:#C8DFA0;color:#0F2D1A;border-radius:20px;padding:.15rem .6rem;font-size:.65rem;font-weight:600;border:1px solid rgba(46,107,46,.25)}
+#map-leaflet{
+  width:100%;
+  height:500px;
+  display:block;
+  position:relative;
+  z-index:1;
+}
+#map-leaflet .leaflet-interactive{cursor:pointer!important}
+#map-legend-row{display:none}
+.leg-item{display:flex;align-items:center;gap:.28rem;font-size:.67rem;color:var(--muted)}
+.leg-swatch{width:16px;height:11px;border-radius:2px;border:1px solid rgba(0,0,0,.1);flex-shrink:0}
+#geo-status{display:none}
+
+#right-panel{display:flex;flex-direction:column}
+#right-panel .panel-body{padding:.6rem .85rem;display:flex;flex-direction:column}
+.var-card{background:var(--off-white);border-radius:var(--radius-sm);padding:.45rem .6rem;border:1px solid var(--sand);flex:1}
+.var-card-title{font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem}
+.var-pos .var-card-title{color:#2E6B2E}
+.var-neg .var-card-title{color:#8B1A1A}
+.var-card canvas{width:100%!important;height:260px!important}
+
+#bottom-row{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:.9rem;padding:0 1.2rem 1.4rem;
+}
+.bottom-panel{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden}
+.bottom-panel .panel-body{padding:.75rem .9rem}
+.bottom-panel canvas{max-height:300px;width:100%!important}
+#sector-table-wrap{overflow-y:auto;max-height:360px}
+#sector-table{width:100%;border-collapse:collapse;font-size:.74rem}
+#sector-table thead th{
+  background:#EAF3DC;color:#2E6B2E;text-transform:uppercase;
+  font-size:.6rem;letter-spacing:.05em;padding:.4rem .6rem;
+  text-align:left;border-bottom:2px solid #C8DFA0;position:sticky;top:0;
+}
+#sector-table tbody tr{transition:background .15s}
+#sector-table tbody tr:hover td{background:var(--sand)}
+#sector-table tbody td{padding:.38rem .6rem;border-bottom:1px solid var(--sand);color:var(--ink)}
+.rank-badge{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:50%;background:#C8DFA0;color:#0F2D1A;font-size:.6rem;font-weight:700}
+.rank-badge.gold{background:#FFF3CD;color:#856404}
+.rank-badge.silver{background:#E9ECEF;color:#495057}
+.rank-badge.bronze{background:#FCE8D8;color:#8B4513}
+
+footer{background:#0F2D1A;color:rgba(255,255,255,.55);text-align:center;font-size:.67rem;padding:.6rem;letter-spacing:.04em}
+
+.loader-overlay{display:none;position:fixed;inset:0;background:rgba(253,250,247,.9);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:1rem}
+.loader-overlay.show{display:flex}
+.loader-spinner{width:38px;height:38px;border:3px solid var(--sand-dark);border-top-color:#2E6B2E;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-text{font-size:.82rem;color:var(--muted);font-weight:500}
+.leaflet-tooltip{font-family:Arial,sans-serif;font-size:.76rem;border:none;box-shadow:var(--shadow-md);border-radius:var(--radius-sm);padding:.4rem .6rem}
+.map-legend-box{
+  position:absolute;bottom:28px;left:8px;z-index:900;
+  background:rgba(255,255,255,0.94);
+  border:1px solid rgba(46,107,46,.25);
+  border-radius:8px;
+  padding:.55rem .7rem;
+  box-shadow:0 2px 8px rgba(15,45,26,.15);
+  font-family:Arial,sans-serif;
+  min-width:170px;
+  pointer-events:none;
+}
+.map-legend-box .leg-title{
+  font-size:.56rem;font-weight:700;color:#0F2D1A;
+  text-transform:uppercase;letter-spacing:.04em;
+  margin-bottom:.35rem;border-bottom:1px solid #C8DFA0;
+  padding-bottom:.2rem;line-height:1.3;
+}
+.map-legend-box .leg-row{
+  display:flex;align-items:center;gap:.4rem;
+  margin-bottom:.25rem;font-size:.68rem;color:#2E6B2E;font-weight:600;
+}
+.map-legend-box .leg-swatch2{
+  width:20px;height:13px;border-radius:3px;
+  border:1px solid rgba(0,0,0,.12);flex-shrink:0;
+}
+</style>
+<script>
+(function(){
+  if(window!==window.top){document.body.innerHTML='';return;}
+  document.addEventListener('contextmenu',function(e){e.preventDefault();});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&'IJC'.indexOf(e.key)>-1)||(e.ctrlKey&&e.key==='U')){
+      e.preventDefault();return false;
+    }
+  });
+})();
+</script>
+</head>
+<body>
+
+<div class="loader-overlay" id="loader-overlay">
+  <div class="loader-spinner"></div>
+  <div class="loader-text" id="loader-text">Cargando datos…</div>
+</div>
+
+<header>
+  <div class="hd-logo">🗺️</div>
+  <div class="hd-text">
+    <h1>Geoportal · Puestos de Trabajo Afiliados al IMSS</h1>
+    <p>(Por Entidad Federativa / Sector Económico / Periodo Enero 2020 - Abril 2026)</p>
+  </div>
+  <div class="hd-group">
+  <div class="hd-filters">
+    <div class="hd-fp">
+      <label>Año</label>
+      <select id="f-anio">
+        <option value="">Todos</option>
+        <option>2020</option><option>2021</option><option>2022</option>
+        <option>2023</option><option>2024</option><option>2025</option><option>2026</option>
+      </select>
+    </div>
+    <div class="hd-fp">
+      <label>Mes</label>
+      <select id="f-mes">
+        <option value="">Todos</option>
+        <option value="1">Enero</option><option value="2">Febrero</option>
+        <option value="3">Marzo</option><option value="4">Abril</option>
+        <option value="5">Mayo</option><option value="6">Junio</option>
+        <option value="7">Julio</option><option value="8">Agosto</option>
+        <option value="9">Septiembre</option><option value="10">Octubre</option>
+        <option value="11">Noviembre</option><option value="12">Diciembre</option>
+      </select>
+    </div>
+    <div class="hd-fp">
+      <label>Entidad</label>
+      <select id="f-ent">
+        <option value="">NACIONAL</option>
+        <option>Aguascalientes</option><option>Baja California</option>
+        <option>Baja California Sur</option><option>Campeche</option>
+        <option>Chiapas</option><option>Chihuahua</option>
+        <option>Ciudad de México</option><option>Coahuila</option>
+        <option>Colima</option><option>Durango</option>
+        <option>Guanajuato</option><option>Guerrero</option>
+        <option>Hidalgo</option><option>Jalisco</option>
+        <option>México</option><option>Michoacán</option>
+        <option>Morelos</option><option>Nayarit</option>
+        <option>Nuevo León</option><option>Oaxaca</option>
+        <option>Puebla</option><option>Querétaro</option>
+        <option>Quintana Roo</option><option>San Luis Potosí</option>
+        <option>Sinaloa</option><option>Sonora</option>
+        <option>Tabasco</option><option>Tamaulipas</option>
+        <option>Tlaxcala</option><option>Veracruz</option>
+        <option>Yucatán</option><option>Zacatecas</option>
+      </select>
+    </div>
+  </div>
+  <div class="hd-right-btns">
+    <button class="hd-btn primary" onclick="applyFilters()">🔍 Buscar</button>
+    <button class="hd-btn" onclick="resetFilters()">↩ Limpiar</button>
+  </div>
+  </div>
+  <div class="hd-right">
+    <span id="hd-status"></span>
+    <div class="hd-badge">📊 DATOS ABIERTOS</div>
+    <div id="last-update"></div>
+  </div>
+</header>
+
+<div id="status-bar"></div>
+
+<div id="kpis-row">
+  <div class="kpi-card">
+    <div class="kpi-top"><span class="kpi-icon">👷</span><span class="kpi-label">Puestos de Trabajo Afiliados: <span id="ent-kpi-ta" style="font-style:italic;font-weight:400;font-size:.58rem"></span></span></div>
+    <div class="kpi-value" id="k-ta">—</div>
+  </div>
+  <div class="kpi-card green">
+    <div class="kpi-top"><span class="kpi-icon">📋</span><span class="kpi-label">Puestos de Trabajo Permanentes</span></div>
+    <div class="kpi-value" id="k-perm">—</div>
+    <div class="kpi-sub-row">
+      <div class="kpi-sub">
+        <span class="kpi-sub-label"><span>🏙️</span><span>Urbanos</span></span>
+        <span class="kpi-sub-val" id="k-tpu">—</span>
+      </div>
+      <div class="kpi-sub">
+        <span class="kpi-sub-label"><span>🌾</span><span>Campo</span></span>
+        <span class="kpi-sub-val" id="k-tpc">—</span>
+      </div>
+    </div>
+  </div>
+  <div class="kpi-card blue">
+    <div class="kpi-top"><span class="kpi-icon">⏱️</span><span class="kpi-label">Puestos de Trabajo Eventuales</span></div>
+    <div class="kpi-value" id="k-even">—</div>
+    <div class="kpi-sub-row">
+      <div class="kpi-sub">
+        <span class="kpi-sub-label"><span>🏙️</span><span>Urbanos</span></span>
+        <span class="kpi-sub-val" id="k-teu">—</span>
+      </div>
+      <div class="kpi-sub">
+        <span class="kpi-sub-label"><span>🌾</span><span>Campo</span></span>
+        <span class="kpi-sub-val" id="k-tec">—</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="main-layout">
+  <div id="left-panel" class="panel">
+    <div class="panel-hdr">
+      <span class="panel-icon">📈</span>
+      <h3>Indicadores Históricos</h3>
+    </div>
+    <div class="panel-body">
+      <div class="chart-mini">
+        <div class="chart-mini-title">📊 Histórico Puestos Afiliados (Nacional)</div>
+        <canvas id="ch-ta-hist"></canvas>
+      </div>
+      <div class="chart-mini">
+        <div class="chart-mini-title">💰 SBC Diario (Nacional) · Nominal vs Real</div>
+        <canvas id="ch-sbc"></canvas>
+      </div>
+      <div class="chart-mini">
+        <div class="chart-mini-title">🍩 Prop. % Sector Económico: <span id="ent-prop-sector" style="font-weight:400;font-size:.6rem;font-style:italic;color:#4A7A3A"></span></div>
+        <canvas id="ch-donut"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div id="map-panel" class="panel">
+    <div class="panel-hdr">
+      <span class="panel-icon">🗺️</span>
+      <h3>Mapa Coroplético · 3 Clases Cuantiles · Greens · WGS84</h3>
+    </div>
+    <div id="map-ctrls">
+      <label>Variable:</label>
+      <select id="map-var" onchange="renderMap(lastFilteredData)">
+        <option value="ta">Puestos Afiliados (ta)</option>
+        <option value="t_perm">Permanentes (t_perm)</option>
+        <option value="t_even">Eventuales (t_even)</option>
+      </select>
+      <span id="map-period-tag">—</span>
+      <span id="geo-status"></span>
+    </div>
+    <div id="map-leaflet" style="position:relative">
+  <div class="map-legend-box" id="map-legend-float" style="display:none">
+    <div class="leg-title" id="map-leg-title">Variable</div>
+    <div id="map-leg-rows"></div>
+  </div>
+</div>
+    <div id="map-legend-row">
+      <div id="map-legend-items" style="display:flex;gap:.65rem;flex-wrap:wrap;align-items:center"></div>
+    </div>
+  </div>
+
+  <div id="right-panel" class="panel">
+    <div class="panel-hdr">
+      <span class="panel-icon">🏭</span>
+      <h3>Variación % Sectorial: <span id="ent-var-sectorial" style="font-weight:400;font-size:.78rem;color:#4A7A3A;font-style:italic"></span></h3>
+    </div>
+    <div class="panel-body" style="display:flex;flex-direction:column;gap:.45rem;padding:.5rem .75rem">
+      <div class="var-card var-pos">
+        <div class="var-card-title">▲ TOP 5 · Mayores Alzas</div>
+        <canvas id="ch-top5pos" style="width:100%"></canvas>
+      </div>
+      <div class="var-card var-neg">
+        <div class="var-card-title">▼ TOP 5 · Mayores Bajas</div>
+        <canvas id="ch-top5neg" style="width:100%"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="bottom-row">
+  <div class="bottom-panel panel">
+    <div class="panel-hdr">
+      <span class="panel-icon">🏆</span>
+      <h3>TOP 20 Empleos por Sector: <span id="ent-top30" style="font-weight:400;font-size:.78rem;color:#4A7A3A;font-style:italic"></span></h3>
+    </div>
+    <div class="panel-body">
+      <canvas id="ch-top30"></canvas>
+    </div>
+  </div>
+  <div class="bottom-panel panel">
+    <div class="panel-hdr">
+      <span class="panel-icon">📋</span>
+      <h3>Catálogo de Sectores Económicos IMSS: <span id="ent-catalogo" style="font-weight:400;font-size:.78rem;color:#4A7A3A;font-style:italic"></span></h3>
+    </div>
+    <div class="panel-body" style="padding:0">
+      <div id="sector-table-wrap">
+        <table id="sector-table">
+          <thead><tr><th>#</th><th>Clave</th><th>Descripción</th><th>Total</th></tr></thead>
+          <tbody id="sector-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div id="heatmap-section" style="padding:0 1.2rem 1.2rem">
+  <div class="panel" style="overflow:hidden">
+    <div class="panel-hdr">
+      <span class="panel-icon">🌡️</span>
+      <h3>Mapa de Calor · Variación Porcentual: <span id="ent-heatmap" style="font-weight:400;font-size:.78rem;color:#4A7A3A;font-style:italic"></span></h3>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:.5rem">
+        <label style="font-size:.65rem;font-weight:800;color:#0F2D1A;text-transform:uppercase;letter-spacing:.05em">Variable:</label>
+        <select id="hm-var" onchange="renderHeatmap()"
+          style="border:1.5px solid var(--sand-dark);background:var(--white);padding:.28rem .5rem;border-radius:var(--radius-sm);font-family:Arial,sans-serif;font-size:.78rem;color:var(--ink);cursor:pointer">
+          <option value="ta">Puestos Afiliados (ta)</option>
+          <option value="t_perm">Puestos Permanentes (t_perm)</option>
+          <option value="t_even">Puestos Eventuales (t_even)</option>
+        </select>
+        <label style="font-size:.65rem;font-weight:800;color:#0F2D1A;text-transform:uppercase;letter-spacing:.05em;margin-left:.4rem">Variación:</label>
+        <div style="display:flex;border:1.5px solid var(--sand-dark);border-radius:var(--radius-sm);overflow:hidden">
+          <button id="hm-btn-mes" onclick="setHmType('mes')"
+            style="background:#2E6B2E;color:#fff;border:none;padding:.28rem .75rem;font-family:Arial,sans-serif;font-size:.75rem;font-weight:700;cursor:pointer;letter-spacing:.03em">
+            Mensual
+          </button>
+          <button id="hm-btn-anual" onclick="setHmType('anual')"
+            style="background:var(--white);color:#2E6B2E;border:none;border-left:1.5px solid var(--sand-dark);padding:.28rem .75rem;font-family:Arial,sans-serif;font-size:.75rem;font-weight:700;cursor:pointer;letter-spacing:.03em">
+            Anual
+          </button>
+        </div>
+      </div>
+    </div>
+    <div style="padding:.75rem 1rem;overflow-x:auto">
+      <div id="heatmap-container"></div>
+
+    </div>
+  </div>
+</div>
+
+<footer>Fuente: Elaboración propia con datos del Instituto Mexicano del Seguro Social.</footer>
+
+<script>
+const _U=(function(){var a='https://mjjiezshaqarcfkt';var b='izmn.supabase.co/rest/v1';return a+b;})();;
+const _K=(function(){var a='eyJhbGciOiJIUzI1NiIs';var b='InR5cCI6IkpXVCJ9.eyJ';var d='pc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qamllenNoYXFhcmNma3Rpem1uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0Njk5MzQsImV4cCI6MjA5NTA0NTkzNH0.AvQQu6kXGwMJA4jPNPoOMhrzVEY51uYG4HlhjnRJ55M';return a+b+d;})();;
+
+const MESES=['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const GREENS=['#C8DFA0','#7BBF44','#2E6B2E'];
+const SC=['A0_1','A0_2','A0_3','A0_4','A0_5','A1_11','A1_12','A1_13','A1_14','A2_20','A2_21','A2_22','A2_23','A2_24','A2_25','A2_26','A2_27','A2_28','A2_29','A3_30','A3_31','A3_32','A3_33','A3_34','A3_35','A3_36','A3_37','A3_38','A3_39','A4_41','A4_42','A5_50','A5_51','A6_61','A6_62','A6_63','A6_64','A6_65','A6_66','A6_67','A6_68','A6_69','A7_71','A7_72','A7_73','A7_74','A7_75','A7_76','A8_81','A8_82','A8_83','A8_84','A8_85','A8_86','A8_87','A8_88','A8_89','A9_91','A9_92','A9_93','A9_94','A9_99'];
+const SL={
+'A0_1':'Agricultura','A0_2':'Ganadería','A0_3':'Silvicultura','A0_4':'Pesca','A0_5':'Caza',
+'A1_11':'Extracción carbón mineral','A1_12':'Extracción petróleo/gas','A1_13':'Minerales metálicos','A1_14':'Explotación de sal',
+'A2_20':'Elaboración alimentos','A2_21':'Elaboración bebidas','A2_22':'Prod. tabaco','A2_23':'Industria textil','A2_24':'Confección prendas vestir','A2_25':'Fab. calzado/cuero','A2_26':'Ind. madera/corcho','A2_27':'Fab. muebles madera','A2_28':'Industria de papel','A2_29':'Editorial/imprenta',
+'A3_30':'Industria química','A3_31':'Refinación petróleo','A3_32':'Hule y plástico','A3_33':'Minerales no metálicos','A3_34':'Ind. metálicas básicas','A3_35':'Prod. metálicos','A3_36':'Maquinaria y equipo','A3_37':'Maq. aparatos eléctricos','A3_38':'Equipo de transporte','A3_39':'Otras manufactureras',
+'A4_41':'Construcción edificaciones','A4_42':'Contratistas especializados',
+'A5_50':'Generación/dist. energía','A5_51':'Agua potable/tratada',
+'A6_61':'Compraventa alimentos','A6_62':'Prendas vestir/uso personal','A6_63':'Artículos hogar','A6_64':'Tiendas autoservicio','A6_65':'Gases/combustibles','A6_66':'Materias primas/materiales','A6_67':'Maq. equipo/herramientas','A6_68':'Eq. transporte/refacciones','A6_69':'Inmuebles/art. diversos',
+'A7_71':'Transporte terrestre','A7_72':'Transporte por agua','A7_73':'Transporte aéreo','A7_74':'Serv. conexos transporte','A7_75':'Serv. transporte gral.','A7_76':'Comunicaciones',
+'A8_81':'Serv. financieros/seguros','A8_82':'Inst. financieras colaterales','A8_83':'Servicios inmuebles','A8_84':'Serv. profesionales/téc.','A8_85':'Servicios de alquiler','A8_86':'Alojamiento temporal','A8_87':'Alimentos/bebidas preparadas','A8_88':'Servicios recreativos','A8_89':'Servicios personales/hogar',
+'A9_91':'Enseñanza/invest./cultura','A9_92':'Serv. médicos/asistencia','A9_93':'Agrup. merc./prof./cívicas','A9_94':'Admón. pública/seguridad','A9_99':'Org. internacionales'
+};
+
+let allData=[],lastFilteredData=[],charts={};
+let mapInstance=null,geoLayer=null,geoJSON=null;
+
+const n=v=>{const x=+v;return isNaN(x)?0:x;};
+const fmt=v=>Math.round(n(v)).toLocaleString('es-MX');
+const pkey=d=>d.anio+'-'+String(d.mes).padStart(2,'0');
+const shortLbl=(col,max)=>{const lb=SL[col]||col;return lb.length>max?lb.substring(0,max-1)+'…':lb;};
+
+function setLoader(show,txt){
+  document.getElementById('loader-overlay').classList.toggle('show',show);
+  if(txt) document.getElementById('loader-text').textContent=txt;
+}
+function setStatus(msg,type){
+  const el=document.getElementById('status-bar');
+  el.textContent=msg;el.className=type;
+  document.getElementById('hd-status').textContent=msg;
+}
+
+const _HEADERS={apikey:_K,Authorization:'Bearer '+_K,'Accept':'application/json;charset=utf-8','Content-Type':'application/json;charset=utf-8'};
+async function sbFetch(path){
+  const r=await fetch(_U+'/'+path,{mode:'cors',credentials:'omit',headers:_HEADERS});
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  return r.json();
+}
+
+async function sbFetchGeo(path){
+  const r=await fetch(_U+'/'+path,{headers:{apikey:_K,Authorization:'Bearer '+_K,'Accept':'application/geo+json'}});
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  return r.json();
+}
+
+async function callRPC(fnName,params={}){
+  const r=await fetch(_U+'/rpc/'+fnName,{
+    method:'POST',
+    headers:{apikey:_K,Authorization:'Bearer '+_K,'Content-Type':'application/json','Accept':'application/json'},
+    body:JSON.stringify(params)
+  });
+  if(!r.ok) throw new Error('RPC HTTP '+r.status+': '+await r.text());
+  return r.json();
+}
+
+async function loadAllData(){
+  const cols='CVE_ENT,entidad,anio,mes,ta,t_even,teu,tec,t_perm,tpu,tpc,total,sbc_n,sbc_r,'+SC.join(',');
+  let rows=[],from=0;
+  while(true){
+    const b=await sbFetch('Base_Final_IMSS_csv_?select='+cols+'&offset='+from+'&limit=1000');
+    rows=rows.concat(b);
+    if(b.length<1000) break;
+    from+=1000;
+  }
+  return rows;
+}
+
+function wkbHexToGeoJSON(hex){
+  if(!hex||typeof hex!=='string') return null;
+  hex=hex.replace(/\s/g,'');
+  if(hex.length<10) return null;
+  try{
+    const buf=new Uint8Array(hex.length/2);
+    for(let i=0;i<buf.length;i++) buf[i]=parseInt(hex.slice(i*2,i*2+2),16);
+    const dv=new DataView(buf.buffer);
+    let pos=0;
+    function readByte(){return buf[pos++];}
+    function readUint32(le){const v=dv.getUint32(pos,le);pos+=4;return v;}
+    function readDouble(le){const v=dv.getFloat64(pos,le);pos+=8;return v;}
+    function readGeom(){
+      const byteOrder=readByte();
+      const le=byteOrder===1;
+      let gtype=readUint32(le);
+      let hasSRID=false;
+      if(gtype&0x20000000){hasSRID=true;gtype&=~0x20000000;}
+      if(gtype&0x80000000){gtype&=~0x80000000;}
+      const hasZ=!!(gtype&0x80000000||gtype>1000&&gtype<2000);
+      const baseType=gtype%1000||gtype;
+      if(hasSRID) readUint32(le);
+      function readPt(){
+        const x=readDouble(le),y=readDouble(le);
+        if(hasZ) readDouble(le);
+        return[x,y];
+      }
+      function readPts(){
+        const cnt=readUint32(le);const pts=[];
+        for(let i=0;i<cnt;i++) pts.push(readPt());
+        return pts;
+      }
+      function readRings(){
+        const cnt=readUint32(le);const rings=[];
+        for(let i=0;i<cnt;i++) rings.push(readPts());
+        return rings;
+      }
+      switch(baseType){
+        case 1:return{type:'Point',coordinates:readPt()};
+        case 2:return{type:'LineString',coordinates:readPts()};
+        case 3:return{type:'Polygon',coordinates:readRings()};
+        case 4:{
+          const n=readUint32(le);const geoms=[];
+          for(let i=0;i<n;i++) geoms.push(readGeom());
+          return{type:'MultiPoint',coordinates:geoms.map(g=>g.coordinates)};
+        }
+        case 5:{
+          const n=readUint32(le);const geoms=[];
+          for(let i=0;i<n;i++) geoms.push(readGeom());
+          return{type:'MultiLineString',coordinates:geoms.map(g=>g.coordinates)};
+        }
+        case 6:{
+          const n=readUint32(le);const geoms=[];
+          for(let i=0;i<n;i++) geoms.push(readGeom());
+          return{type:'MultiPolygon',coordinates:geoms.map(g=>g.coordinates)};
+        }
+        case 7:{
+          const n=readUint32(le);const geoms=[];
+          for(let i=0;i<n;i++) geoms.push(readGeom());
+          return{type:'GeometryCollection',geometries:geoms};
+        }
+        default:return null;
+      }
+    }
+    return readGeom();
+  }catch(e){return null;}
+}
+
+async function loadGeoLayer(){
+  const geoEl=document.getElementById('geo-status');
+  geoEl.textContent='Cargando geometrías…';
+  geoJSON=null;
+
+  
+
+  
+  try{
+    geoEl.textContent='Solicitando geometrías vía RPC…';
+    const raw = await callRPC('get_entidades_wgs84');
+
+    
+    let jsonStr = null;
+    if(typeof raw === 'string')                         jsonStr = raw;
+    else if(Array.isArray(raw) && raw.length > 0){
+      const r0 = raw[0];
+      if(typeof r0 === 'string')                        jsonStr = r0;
+      else if(r0 && typeof r0 === 'object'){
+        
+        for(const v of Object.values(r0)){
+          if(typeof v === 'string'){ jsonStr = v; break; }
+        }
+      }
+    } else if(raw && typeof raw === 'object'){
+      if(raw.type === 'FeatureCollection'){
+        
+        jsonStr = JSON.stringify(raw);
+      }
+    }
+
+    if(!jsonStr) throw new Error('RPC devolvió formato inesperado: '+JSON.stringify(raw).substring(0,100));
+
+    const fc = JSON.parse(jsonStr);
+    if(!fc || fc.type !== 'FeatureCollection' || !Array.isArray(fc.features) || fc.features.length === 0)
+      throw new Error('FeatureCollection vacía o inválida');
+
+    
+    fc.features.forEach(f=>{
+      const p = f.properties || {};
+      f.properties = {
+        CVE_ENT: String(p.CVE_ENT || p.cve_ent || '').padStart(2,'0'),
+        NOMGEO:  p.NOMGEO || p.nomgeo || ''
+      };
+    });
+
+    geoJSON = fc;
+    geoEl.textContent = '✓ '+fc.features.length+' entidades cargadas (RPC · WGS84 4326)';
+    return;
+
+  } catch(e1){
+    geoEl.textContent = 'RPC falló ('+e1.message.substring(0,50)+'), usando geo+json…';
+    console.warn('RPC error:', e1);
+  }
+
+  
+  
+  try{
+    geoEl.textContent='Solicitando geometrías vía geo+json…';
+    const r2 = await sbFetchGeo('00ent_wgs84?select=CVE_ENT,NOMGEO,geom');
+
+    if(r2 && r2.type === 'FeatureCollection' && Array.isArray(r2.features) && r2.features.length > 0){
+      r2.features.forEach(f=>{
+        const p = f.properties || {};
+        f.properties = {
+          CVE_ENT: String(p.CVE_ENT || p.cve_ent || '').padStart(2,'0'),
+          NOMGEO:  p.NOMGEO || p.nomgeo || ''
+        };
+      });
+      
+      const b = getFC_bbox(r2);
+      if(b.minX < -180 || b.maxX > 180 || b.minY < -90 || b.maxY > 90){
+        throw new Error('Bbox fuera de rango WGS84: Lon['+b.minX.toFixed(0)+','+b.maxX.toFixed(0)+']');
+      }
+      geoJSON = r2;
+      geoEl.textContent = '✓ '+r2.features.length+' entidades (geo+json · WGS84)';
+      return;
+    }
+    throw new Error('geo+json vacío o sin features');
+
+  } catch(e2){
+    geoEl.textContent = 'geo+json falló ('+e2.message.substring(0,50)+')';
+    console.warn('geo+json error:', e2);
+  }
+
+  
+  
+  try{
+    geoEl.textContent='Decodificando WKB…';
+    const rows = await sbFetch('00ent_wgs84?select=CVE_ENT,NOMGEO,geom&limit=200');
+    const features = [];
+    let wkbErr = 0;
+
+    for(const r of rows){
+      let geom = null;
+      const raw = r.geom;
+      if(raw && typeof raw === 'object' && raw.type){
+        geom = raw;
+      } else if(raw && typeof raw === 'string'){
+        const t = raw.trim();
+        if(t.startsWith('{')) { try{ geom = JSON.parse(t); }catch(e){} }
+        else                  { geom = wkbHexToGeoJSON(t); }
+      }
+      if(geom && geom.type){
+        
+        const firstCoord = getFirstCoord(geom);
+        if(firstCoord && (Math.abs(firstCoord[0]) > 360 || Math.abs(firstCoord[1]) > 90)){
+          wkbErr++;
+          continue; 
+        }
+        features.push({
+          type:'Feature',
+          properties:{ CVE_ENT:String(r.CVE_ENT||'').padStart(2,'0'), NOMGEO:r.NOMGEO||'' },
+          geometry:geom
+        });
+      }
+    }
+
+    if(!features.length)
+      throw new Error('0 features válidas. WKB errors='+wkbErr+'. Ejecuta fix_geometria_supabase.sql');
+
+    geoJSON = { type:'FeatureCollection', features };
+    geoEl.textContent = '✓ '+features.length+' entidades (WKB decode'+(wkbErr?' · '+wkbErr+' skipped':'')+')';
+
+  } catch(e3){
+    geoEl.textContent = '⚠ '+e3.message;
+    geoJSON = null;
+    console.error('loadGeoLayer final error:', e3);
+  }
+  
+  if(geoJSON && lastFilteredData && lastFilteredData.length){
+    setTimeout(()=>renderMap(lastFilteredData), 100);
+  }
+}
+
+function getFirstCoord(geom){
+  if(!geom) return null;
+  const t = geom.type;
+  if(t==='Point') return geom.coordinates;
+  if(t==='LineString'||t==='MultiPoint') return geom.coordinates[0];
+  if(t==='Polygon'||t==='MultiLineString') return geom.coordinates[0]&&geom.coordinates[0][0];
+  if(t==='MultiPolygon') return geom.coordinates[0]&&geom.coordinates[0][0]&&geom.coordinates[0][0][0];
+  if(t==='GeometryCollection') return getFirstCoord(geom.geometries&&geom.geometries[0]);
+  return null;
+}
+
+function getFC_bbox(fc){
+  let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+  (fc.features||[]).forEach(f=>{
+    walkCoords(f.geometry,(x,y)=>{
+      if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;
+    });
+  });
+  return{minX,maxX,minY,maxY};
+}
+function walkCoords(geom,cb){
+  if(!geom) return;
+  const t=geom.type;
+  if(t==='Point'){cb(geom.coordinates[0],geom.coordinates[1]);}
+  else if(t==='LineString'||t==='MultiPoint') geom.coordinates.forEach(c=>cb(c[0],c[1]));
+  else if(t==='Polygon'||t==='MultiLineString') geom.coordinates.forEach(r=>r.forEach(c=>cb(c[0],c[1])));
+  else if(t==='MultiPolygon') geom.coordinates.forEach(p=>p.forEach(r=>r.forEach(c=>cb(c[0],c[1]))));
+  else if(t==='GeometryCollection') geom.geometries.forEach(g=>walkCoords(g,cb));
+}
+function isMexicoBbox(b){return b.minX>-125&&b.maxX<-83&&b.minY>13&&b.maxY<34;}
+
+async function init(){
+  setLoader(true,'Conectando a Supabase…');
+  try{
+    setLoader(true,'Cargando serie de tiempo IMSS…');
+    allData=await loadAllData();
+    setLoader(true,'Cargando capa geográfica WGS84…');
+    await loadGeoLayer();
+    document.getElementById('last-update').textContent='⏱ '+new Date().toLocaleTimeString('es-MX');
+    setStatus('✓ '+allData.length+' registros · WGS84','ok');
+    
+    setLatestPeriod();
+    applyFilters();
+    updateEntTags();
+  }catch(e){setStatus('Error: '+e.message,'err');}
+  finally{setLoader(false);}
+}
+
+function setLatestPeriod(){
+  if(!allData.length) return;
+  
+  let maxAnio=0, maxMes=0;
+  allData.forEach(d=>{
+    const a=parseInt(d.anio)||0, m=parseInt(d.mes)||0;
+    if(a>maxAnio||(a===maxAnio&&m>maxMes)){maxAnio=a;maxMes=m;}
+  });
+  if(maxAnio>0){
+    const selAnio=document.getElementById('f-anio');
+    const selMes=document.getElementById('f-mes');
+    
+    for(let i=0;i<selAnio.options.length;i++){
+      if(parseInt(selAnio.options[i].value)===maxAnio){selAnio.selectedIndex=i;break;}
+    }
+    for(let i=0;i<selMes.options.length;i++){
+      if(parseInt(selMes.options[i].value)===maxMes){selMes.selectedIndex=i;break;}
+    }
+  }
+}
+
+function updateEntTags(){
+  const fEnt = document.getElementById('f-ent').value;
+  const label = fEnt ? fEnt.toUpperCase() : 'NACIONAL';
+  const ids = ['ent-kpi-ta','ent-var-sectorial',
+               'ent-prop-sector','ent-top30','ent-catalogo','ent-heatmap'];
+  ids.forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.textContent = label;
+  });
+}
+
+function applyFilters(){
+  const a=document.getElementById('f-anio').value;
+  const m=document.getElementById('f-mes').value;
+  const e=document.getElementById('f-ent').value;
+  let d=allData;
+  if(a) d=d.filter(r=>String(r.anio)===a);
+  if(m) d=d.filter(r=>String(r.mes)===m);
+  if(e) d=d.filter(r=>r.entidad===e);
+  lastFilteredData=d;
+  updateEntTags();
+  renderAll(d);
+}
+function resetFilters(){
+  
+  document.getElementById('f-ent').value = '';
+  setLatestPeriod();
+  applyFilters();
+}
+
+function renderAll(data){
+  updateKPIs(data);
+  renderHeatmap();
+  
+  renderTaHist(allData);
+  renderSBC(allData);
+  
+  renderDonut(data);
+  renderTop10(data);
+  renderTop30(data);
+  renderTable(data);
+  renderMap(data);
+}
+
+function updateKPIs(data){
+  document.getElementById('k-ta').textContent  =fmt(data.reduce((s,d)=>s+n(d.ta),0));
+  document.getElementById('k-perm').textContent=fmt(data.reduce((s,d)=>s+n(d.t_perm),0));
+  document.getElementById('k-even').textContent=fmt(data.reduce((s,d)=>s+n(d.t_even),0));
+  document.getElementById('k-tpu').textContent =fmt(data.reduce((s,d)=>s+n(d.tpu),0));
+  document.getElementById('k-tpc').textContent =fmt(data.reduce((s,d)=>s+n(d.tpc),0));
+  document.getElementById('k-teu').textContent =fmt(data.reduce((s,d)=>s+n(d.teu),0));
+  document.getElementById('k-tec').textContent =fmt(data.reduce((s,d)=>s+n(d.tec),0));
+}
+
+const donutPctPlugin={
+  id:'donutPct',
+  afterDatasetsDraw(chart){
+    if(chart.config.type!=='doughnut') return;
+    const {ctx,data}=chart;
+    const ds=data.datasets[0];
+    const grand=ds.data.reduce((a,b)=>a+b,0);
+    chart.getDatasetMeta(0).data.forEach((arc,i)=>{
+      const val=ds.data[i];
+      const pct=((val/grand)*100).toFixed(1);
+      if(parseFloat(pct)<2) return;
+      const angle=(arc.startAngle+arc.endAngle)/2;
+      const r=(arc.outerRadius+arc.innerRadius)/2;
+      const x=arc.x+Math.cos(angle)*r;
+      const y=arc.y+Math.sin(angle)*r;
+      ctx.save();
+      ctx.font='bold 8px Arial,sans-serif';
+      ctx.fillStyle='#ffffff';
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.fillText(pct+'%',x,y);
+      ctx.restore();
+    });
+  }
+};
+
+function mkChart(id,type,cd,opts,extraPlugins){
+  if(charts[id]){charts[id].destroy();delete charts[id];}
+  const el=document.getElementById(id);if(!el) return;
+  const ctx2d=el.getContext('2d');
+  charts[id]=new Chart(ctx2d,{
+    type,data:cd,
+    plugins:extraPlugins||[],
+    options:{
+      responsive:true,maintainAspectRatio:true,
+      animation:{duration:500},
+      plugins:{legend:{labels:{font:{family:'Arial',size:9},boxWidth:9,padding:6}}},
+      scales:type!=='doughnut'&&type!=='pie'?{
+        x:{ticks:{font:{family:'Arial',size:8},maxRotation:45},grid:{color:'rgba(0,0,0,.04)'}},
+        y:{ticks:{font:{family:'Arial',size:8}},grid:{color:'rgba(0,0,0,.05)'}}
+      }:undefined,
+      ...opts
+    }
+  });
+}
+
+function renderTaHist(data){
+  const agg={};
+  data.forEach(d=>{const k=pkey(d);agg[k]=(agg[k]||0)+n(d.ta);});
+  const s=Object.entries(agg).sort((a,b)=>a[0].localeCompare(b[0]));
+  if(!s.length) return;
+  mkChart('ch-ta-hist','line',{
+    labels:s.map(e=>e[0]),
+    datasets:[{
+      label:'Puestos Afiliados',data:s.map(e=>e[1]),
+      borderColor:'#2E6B2E',borderWidth:2,
+      backgroundColor(ctx){
+        const g=ctx.chart.ctx.createLinearGradient(0,0,0,110);
+        g.addColorStop(0,'rgba(46,107,46,.35)');g.addColorStop(1,'rgba(46,107,46,.03)');return g;
+      },
+      fill:true,tension:.35,
+      pointRadius:0,
+      pointHoverRadius:7,
+      pointHoverBackgroundColor:'#2E6B2E',
+      pointHoverBorderColor:'#ffffff',
+      pointHoverBorderWidth:2,
+      clip:false
+    }]
+  },{
+    interaction:{mode:'index',intersect:false},
+    plugins:{
+      legend:{display:false},
+      tooltip:{
+        mode:'index',intersect:false,
+        callbacks:{label:ctx=>'  '+ctx.parsed.y.toLocaleString('es-MX')+' puestos'}
+      }
+    },
+    layout:{padding:{right:6,left:2}},
+    scales:{
+      x:{ticks:{maxTicksLimit:7,font:{family:'Arial',size:8}}},
+      y:{ticks:{font:{family:'Arial',size:8},callback:v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v}}
+    }
+  });
+}
+
+function renderSBC(data){
+  const agg={};
+  data.forEach(d=>{
+    const k=pkey(d);const vn=n(d.sbc_n),vr=n(d.sbc_r);
+    if(!agg[k]) agg[k]={mn:vn>0?vn:Infinity,mr:vr>0?vr:Infinity};
+    else{if(vn>0&&vn<agg[k].mn) agg[k].mn=vn;if(vr>0&&vr<agg[k].mr) agg[k].mr=vr;}
+  });
+  const s=Object.entries(agg).sort((a,b)=>a[0].localeCompare(b[0]));
+  if(!s.length) return;
+
+  
+  const inlineLegendPlugin = {
+    id:'inlineLegend',
+    afterDraw(chart){
+      const {ctx, chartArea} = chart;
+      if(!chartArea) return;
+      const datasets = chart.data.datasets;
+      const colors   = ['#0F2D1A','#7BBF44'];
+      const styles   = ['normal','normal'];
+      ctx.save();
+      ctx.textBaseline = 'top';
+      ctx.font = '700 8.5px Arial,sans-serif';
+      const x0 = chartArea.left + 4;
+      let y0    = chartArea.top + 4;
+      datasets.forEach((ds,i)=>{
+        if(chart.getDatasetMeta(i).hidden) return;
+        
+        ctx.strokeStyle = colors[i];
+        ctx.lineWidth   = ds.borderDash ? 1.5 : 2;
+        ctx.setLineDash(ds.borderDash || []);
+        ctx.beginPath();
+        ctx.moveTo(x0, y0 + 5);
+        ctx.lineTo(x0 + 14, y0 + 5);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = colors[i];
+        ctx.fillText(ds.label, x0 + 18, y0);
+        y0 += 14;
+      });
+      ctx.restore();
+    }
+  };
+
+  mkChart('ch-sbc','line',{
+    labels:s.map(e=>e[0]),
+    datasets:[
+      {label:'SBC Nominal',data:s.map(e=>e[1].mn===Infinity?null:e[1].mn),
+       borderColor:'#0F2D1A',borderWidth:1.8,tension:.3,pointRadius:0,pointHoverRadius:7,pointHoverBackgroundColor:'#0F2D1A',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,clip:false,fill:false},
+      {label:'SBC Real',   data:s.map(e=>e[1].mr===Infinity?null:e[1].mr),
+       borderColor:'#7BBF44',borderWidth:1.8,tension:.3,pointRadius:0,pointHoverRadius:7,pointHoverBackgroundColor:'#7BBF44',pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,clip:false,borderDash:[4,3],fill:false}
+    ]
+  },{
+    interaction:{mode:'index',intersect:false},
+    plugins:{
+      legend:{display:false},
+      tooltip:{mode:'index',intersect:false}
+    },
+    layout:{padding:{right:6,left:2,top:2,bottom:0}},
+    scales:{
+      x:{ticks:{maxTicksLimit:6,font:{family:'Arial',size:8}}},
+      y:{ticks:{font:{family:'Arial',size:8},callback:v=>'$'+v.toLocaleString('es-MX')}}
+    }
+  },[inlineLegendPlugin]);
+}
+
+function renderDonut(data){
+  const GRUPOS=[
+    {label:'Agric./Ganad./Silv./Pesca/Caza', cols:['A0_1','A0_2','A0_3','A0_4','A0_5'],                                                                                                          color:'#4CAF50'},
+    {label:'Ind. Extractivas',               cols:['A1_11','A1_12','A1_13','A1_14'],                                                                                                              color:'#795548'},
+    {label:'Manufactura Ligera',             cols:['A2_20','A2_21','A2_22','A2_23','A2_24','A2_25','A2_26','A2_27','A2_28','A2_29'],                                                              color:'#F9A825'},
+    {label:'Manufactura Pesada',             cols:['A3_30','A3_31','A3_32','A3_33','A3_34','A3_35','A3_36','A3_37','A3_38','A3_39'],                                                              color:'#0F2D1A'},
+    {label:'Construcción',                   cols:['A4_41','A4_42'],                                                                                                                              color:'#E57373'},
+    {label:'Elect./Agua Potable',            cols:['A5_50','A5_51'],                                                                                                                              color:'#29B6F6'},
+    {label:'Comercio',                       cols:['A6_61','A6_62','A6_63','A6_64','A6_65','A6_66','A6_67','A6_68','A6_69'],                                                                      color:'#2E6B2E'},
+    {label:'Transportes y Comunic.',         cols:['A7_71','A7_72','A7_73','A7_74','A7_75','A7_76'],                                                                                              color:'#7BBF44'},
+    {label:'Servs. Empresas/Pers./Hogar',    cols:['A8_81','A8_82','A8_83','A8_84','A8_85','A8_86','A8_87','A8_88','A8_89'],                                                                      color:'#5A3E8A'},
+    {label:'Servs. Soc. y Comunales',        cols:['A9_91','A9_92','A9_93','A9_94','A9_99'],                                                                                                      color:'#1B5E84'},
+  ];
+
+  const totals = GRUPOS.map(g=>({
+    label: g.label,
+    color: g.color,
+    val: data.reduce((s,d)=>s+g.cols.reduce((ss,col)=>ss+n(d[col]),0),0)
+  }));
+  const grand = totals.reduce((s,g)=>s+g.val,0);
+  if(!grand) return;
+
+  
+  const sorted = [...totals].sort((a,b)=>b.val-a.val);
+  const pcts   = sorted.map(g=>parseFloat(((g.val/grand)*100).toFixed(1)));
+
+  
+  const pctPlugin = {
+    id:'sectorPct',
+    afterDatasetsDraw(chart){
+      const {ctx} = chart;
+      chart.getDatasetMeta(0).data.forEach((bar,i)=>{
+        const txt = pcts[i].toFixed(1)+'%';
+        ctx.save();
+        ctx.font = '500 10px Arial,sans-serif';
+        ctx.fillStyle = '#0F2D1A';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(txt, bar.x + 5, bar.y);
+        ctx.restore();
+      });
+    }
+  };
+
+  
+  const TWO_LINE = {
+    'Agric./Ganad./Silv./Pesca/Caza': ['Agric./Ganad./Silv.','Pesca/Caza'],
+    'Servs. Empresas/Pers./Hogar':    ['Servs. Empresas/','Pers./Hogar'],
+    'Servs. Soc. y Comunales':        ['Servs. Soc. y','Comunales'],
+  };
+
+  mkChart('ch-donut','bar',{
+    labels: sorted.map(g=> TWO_LINE[g.label] || g.label),
+    datasets:[{
+      data: pcts,
+      backgroundColor: sorted.map(g=>g.color),
+      borderRadius: 5,
+      borderSkipped: false,
+      barThickness: 12,
+      categoryPercentage: 0.92,
+      barPercentage: 0.88
+    }]
+  },{
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    layout:{padding:{right:44, left:0, top:1, bottom:1}},
+    plugins:{
+      legend:{display:false},
+      tooltip:{
+        backgroundColor:'rgba(15,45,26,.93)',
+        titleColor:'#C8DFA0',
+        bodyColor:'#EAF3DC',
+        padding:10,
+        cornerRadius:8,
+        callbacks:{
+          title: ctx=>[ctx[0].label],
+          label: ctx=>'  '+ctx.parsed.x.toFixed(1)+'% del total'
+        }
+      }
+    },
+    scales:{
+      x:{
+        ticks:{font:{family:'Arial',size:8.5},callback:v=>v+'%'},
+        grid:{color:'rgba(0,0,0,.04)'},
+        min:0, max:Math.ceil(Math.max(...pcts)/5)*5+3
+      },
+      y:{
+        ticks:{font:{family:'Arial',size:7.5},maxRotation:0,color:'#0F2D1A',padding:2,autoSkip:false},
+        grid:{display:false},
+        afterFit(scaleInst){scaleInst.width=Math.min(scaleInst.width,88);}
+      }
+    }
+  },[pctPlugin]);
+}
+
+function renderTop10(data){
+  const fAnio = document.getElementById('f-anio').value;
+  const fMes  = document.getElementById('f-mes').value;
+
+  
+  if(!fAnio && !fMes){
+    let maxA=0,maxM=0;
+    baseData.forEach(d=>{const a=parseInt(d.anio)||0,m=parseInt(d.mes)||0;if(a>maxA||(a===maxA&&m>maxM)){maxA=a;maxM=m;}});
+    data = baseData.filter(d=>parseInt(d.anio)===maxA&&parseInt(d.mes)===maxM);
+  }
+  const curr = {};
+  SC.forEach(col => { curr[col] = data.reduce((s,d) => s + n(d[col]), 0); });
+
+  
+  const fEnt = document.getElementById('f-ent').value;
+  
+  const baseData = fEnt ? allData.filter(d => d.entidad === fEnt) : allData;
+
+  let prevMData = [], prevMLabel = '';
+  if(fAnio && fMes){
+    const pMesN  = parseInt(fMes) - 1;
+    const pAnioN = pMesN === 0 ? parseInt(fAnio) - 1 : parseInt(fAnio);
+    const pMesV  = pMesN === 0 ? 12 : pMesN;
+    prevMData  = baseData.filter(d => parseInt(d.anio) === pAnioN && parseInt(d.mes) === pMesV);
+    prevMLabel = MESES[pMesV] + ' ' + pAnioN;
+  } else {
+    
+    let maxA=0,maxM=0;
+    baseData.forEach(d=>{const a=parseInt(d.anio)||0,m=parseInt(d.mes)||0;if(a>maxA||(a===maxA&&m>maxM)){maxA=a;maxM=m;}});
+    
+    const pAnioN = maxA - 1;
+    prevMData  = baseData.filter(d=>parseInt(d.anio)===pAnioN&&parseInt(d.mes)===maxM);
+    prevMLabel = MESES[maxM]+' '+pAnioN;
+    
+    data = baseData.filter(d=>parseInt(d.anio)===maxA&&parseInt(d.mes)===maxM);
+  }
+  const prevM = {};
+  SC.forEach(col => { prevM[col] = prevMData.reduce((s,d) => s + n(d[col]), 0); });
+
+  
+  let prevAData = [], prevALabel = '';
+  if(fAnio && fMes){
+    const pAnio = parseInt(fAnio) - 1;
+    const pMes  = parseInt(fMes);
+    prevAData  = baseData.filter(d => parseInt(d.anio) === pAnio && parseInt(d.mes) === pMes);
+    prevALabel = MESES[pMes] + ' ' + pAnio;
+  } else if(fAnio){
+    const pAnio = parseInt(fAnio) - 1;
+    prevAData  = baseData.filter(d => parseInt(d.anio) === pAnio);
+    prevALabel = 'Año ' + pAnio;
+  } else {
+    let maxA2=0,maxM2=0;
+    baseData.forEach(d=>{const a=parseInt(d.anio)||0,m=parseInt(d.mes)||0;if(a>maxA2||(a===maxA2&&m>maxM2)){maxA2=a;maxM2=m;}});
+    prevAData  = baseData.filter(d=>parseInt(d.anio)===maxA2-1&&parseInt(d.mes)===maxM2);
+    prevALabel = MESES[maxM2]+' '+(maxA2-1);
+  }
+  const prevA = {};
+  SC.forEach(col => { prevA[col] = prevAData.reduce((s,d) => s + n(d[col]), 0); });
+
+  
+  const varsM = SC.map(col => {
+    const c0=curr[col], p0=prevM[col];
+    const pct = p0>0 ? ((c0-p0)/p0)*100 : null;
+    const pctA = prevA[col]>0 ? ((c0-prevA[col])/prevA[col])*100 : null;
+    return {col, curr:c0, prevM:p0, pct, pctA};
+  }).filter(v => v.pct !== null);
+
+  const top5pos = [...varsM].sort((a,b)=>b.pct-a.pct).filter(v=>v.pct>0).slice(0,5);
+  const top5neg = [...varsM].sort((a,b)=>a.pct-b.pct).filter(v=>v.pct<0).slice(0,5);
+
+  function renderVarChart(id, items, isPos){
+    if(!items.length){ if(charts[id]){charts[id].destroy();delete charts[id];} return; }
+
+    const labels = items.map(v => v.col);
+    const values = items.map(v => parseFloat(v.pct.toFixed(2)));
+    const annuals= items.map(v => v.pctA !== null ? parseFloat(v.pctA.toFixed(2)) : null);
+
+    const palPos = ['#1A4D1A','#2E6B2E','#3D8A3D','#5A9A2E','#7BBF44'];
+    const palNeg = ['#4A0000','#6B0000','#8B0000','#B71C1C','#E57373'];
+    const nIt = items.length;
+    const stops = items.map((_,i)=>{
+      const pal = isPos ? palPos : palNeg;
+      const step = nIt<=1?0:Math.round((i/(nIt-1))*(pal.length-1));
+      return pal[step];
+    });
+
+    const pctLabelPlugin = {
+      id: 'pctLabel_'+id,
+      afterDatasetsDraw(chart){
+        const {ctx, chartArea} = chart;
+        if(!chartArea) return;
+        chart.getDatasetMeta(0).data.forEach((bar,i)=>{
+          const mVal  = values[i];
+          const aVal  = annuals[i];
+          const mSign = mVal>=0?'+':'';
+          const mTxt  = mSign+mVal.toFixed(2)+'%';
+
+          ctx.save();
+          
+          ctx.font = '700 11px Arial,sans-serif';
+          ctx.textBaseline = 'middle';
+          const mW = ctx.measureText(mTxt).width + 10;
+          const mH = 16;
+          const bgM = mVal>=0 ? '#2E6B2E' : '#8B0000';
+          ctx.fillStyle = bgM;
+          let mX;
+          if(isPos){
+            mX = bar.x + 4;
+          } else {
+            const ca = chart.chartArea;
+            mX = (ca ? ca.right : bar.base) + 4;
+          }
+          const mY = bar.y - mH/2;
+          roundRect(ctx, mX, mY, mW, mH, 3);
+          ctx.fill();
+          ctx.fillStyle = '#ffffff';
+          ctx.textAlign = 'left';
+          ctx.fillText(mTxt, mX + 4, bar.y);
+
+          
+          if(aVal !== null){
+            const aSign = aVal>=0?'+':'';
+            const aTxt  = 'Anual: '+aSign+aVal.toFixed(2)+'%';
+            ctx.font = '600 9px Arial,sans-serif';
+            ctx.fillStyle = aVal>=0 ? '#2E6B2E' : '#8B0000';
+            ctx.textAlign = 'left';
+            const barH2 = bar.height || 14;
+            if(isPos){
+              ctx.fillText(aTxt, bar.x + 4, bar.y + barH2/2 + 8);
+            } else {
+              const ca2 = chart.chartArea;
+              ctx.fillText(aTxt, (ca2?ca2.right:bar.base) + 4, bar.y + barH2/2 + 8);
+            }
+          }
+          ctx.restore();
+        });
+      }
+    };
+
+    if(charts[id]){charts[id].destroy();delete charts[id];}
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.style.background = 'transparent';
+    
+    const dpr = Math.max(window.devicePixelRatio||1, 2);
+    Chart.defaults.devicePixelRatio = dpr;
+
+    charts[id] = new Chart(el.getContext('2d',{willReadFrequently:false}),{
+      type:'bar',
+      data:{labels, datasets:[{
+        label: isPos?'▲ Alza mensual':'▼ Baja mensual',
+        data: values,
+        backgroundColor: stops,
+        borderRadius: 5,
+        borderSkipped: false,
+        barThickness: 15,
+        categoryPercentage: 1.0,
+        barPercentage: 0.98
+      }]},
+      plugins:[pctLabelPlugin],
+      options:{
+        indexAxis:'y',
+        responsive:true,
+        maintainAspectRatio:false,
+        animation:{duration:400},
+        layout:{padding:{
+          right: isPos ? 90 : 68,
+          left:  isPos ? 8  : 8,
+          top: 4, bottom: 22
+        }},
+        plugins:{
+          legend:{display:false},
+          tooltip:{
+            backgroundColor:'rgba(240,248,232,0.97)',
+            titleColor:'#0F2D1A',
+            bodyColor:'#2E6B2E',
+            borderColor:'#C8DFA0',
+            borderWidth:1,
+            padding:10,
+            cornerRadius:8,
+            callbacks:{
+              title: ctx=>[ctx[0].label+' — '+(SL[ctx[0].label]||ctx[0].label)],
+              label: ctx=>{
+                const v=ctx.parsed.x!==undefined?ctx.parsed.x:ctx.parsed.y;
+                return '  Mensual: '+(v>=0?'+':'')+v.toFixed(2)+'%';
+              },
+              afterLabel: ctx=>{
+                const i=ctx.dataIndex, row=items[i];
+                if(!row) return '';
+                const lines=[
+                  '  Actual:   '+row.curr.toLocaleString('es-MX'),
+                  '  Anterior: '+row.prevM.toLocaleString('es-MX')+' ('+prevMLabel+')'
+                ];
+                if(row.pctA!==null){
+                  lines.push('  Anual: '+(row.pctA>=0?'+':'')+row.pctA.toFixed(2)+'% vs '+prevALabel);
+                }
+                return lines;
+              }
+            }
+          }
+        },
+        scales:{
+          x:{
+            ticks:{
+              font:{family:'Arial',size:9.5},
+              color:'#555',
+              callback:v=>(v>=0?'+':'')+v.toFixed(1)+'%'
+            },
+            grid:{color:'rgba(0,0,0,.05)'},
+            min:isPos?0:undefined,
+            max:isPos?undefined:0,
+            grace:'5%'
+          },
+          y:{
+            ticks:{font:{family:'Arial',size:11},maxRotation:0,color:'#0F2D1A'},
+            grid:{display:false}
+          }
+        }
+      }
+    });
+  }
+
+  renderVarChart('ch-top5pos', top5pos, true);
+  renderVarChart('ch-top5neg', top5neg, false);
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.lineTo(x+w-r,y);
+  ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r);
+  ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h);
+  ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r);
+  ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+}
+
+function renderTop30(data){
+  const totals={};
+  SC.forEach(c=>{totals[c]=data.reduce((s,d)=>s+n(d[c]),0);});
+  const top20=Object.entries(totals).sort((a,b)=>b[1]-a[1]).slice(0,20);
+  const makeColor=i=>i%2===0?`hsl(130,${60-i*.8}%,${28+i*1.1}%)`:`hsl(100,${55-i*.5}%,${42+i*.9}%)`;
+  mkChart('ch-top30','bar',{
+    labels:top20.map(e=>shortLbl(e[0],24)),
+    datasets:[{
+      label:'Trabajadores',
+      data:top20.map(e=>e[1]),
+      backgroundColor:top20.map((_,i)=>makeColor(i)),
+      borderRadius:4,
+      borderSkipped:false
+    }]
+  },{
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{
+        ticks:{font:{family:'Arial',size:7},maxRotation:60,minRotation:45},
+        grid:{display:false}
+      },
+      y:{
+        ticks:{font:{family:'Arial',size:8},callback:v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v},
+        grid:{color:'rgba(0,0,0,.05)'}
+      }
+    }
+  });
+}
+
+function renderTable(data){
+  const totals={};
+  SC.forEach(c=>{totals[c]=data.reduce((s,d)=>s+n(d[c]),0);});
+  const sorted=Object.entries(totals).sort((a,b)=>b[1]-a[1]);
+  const maxVal=sorted[0]?sorted[0][1]:1;
+  document.getElementById('sector-tbody').innerHTML=sorted.map(([col,val],i)=>{
+    let badge=`<span class="rank-badge">${i+1}</span>`;
+    if(i===0) badge='<span class="rank-badge gold">🥇</span>';
+    else if(i===1) badge='<span class="rank-badge silver">🥈</span>';
+    else if(i===2) badge='<span class="rank-badge bronze">🥉</span>';
+    const pct=maxVal>0?((val/maxVal)*100).toFixed(0):0;
+    return`<tr>
+      <td>${badge}</td>
+      <td style="font-weight:600;font-size:.68rem;color:var(--terra-dark)">${col}</td>
+      <td style="font-size:.7rem">${SL[col]||col}</td>
+      <td style="text-align:right;font-weight:600;font-size:.7rem;color:var(--terra-dark)">
+        ${fmt(val)}
+        <div style="height:3px;background:var(--sand);border-radius:2px;margin-top:2px">
+          <div style="height:3px;background:#2E6B2E;border-radius:2px;width:${pct}%"></div>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function renderMap(data){
+  if(!data||!data.length) return;
+  const varKey=document.getElementById('map-var').value;
+  const varLabel={ta:'Puestos Afiliados',t_perm:'Permanentes',t_even:'Eventuales'}[varKey];
+  const anios=[...new Set(data.map(d=>d.anio))].sort();
+  const meses=[...new Set(data.map(d=>+d.mes))].sort((a,b)=>a-b);
+  const aTxt=anios.length===1?anios[0]:'Varios años';
+  const mTxt=meses.length===1?MESES[meses[0]]:'Varios meses';
+  document.getElementById('map-period-tag').textContent=aTxt+' / '+mTxt+' · '+varLabel;
+
+  const agg={};
+  data.forEach(d=>{const cve=String(d.CVE_ENT||'').padStart(2,'0');agg[cve]=(agg[cve]||0)+n(d[varKey]);});
+  const vals=Object.values(agg).filter(v=>v>0).sort((a,b)=>a-b);
+  const q1=vals.length?vals[Math.floor(vals.length/3)]:0;
+  const q2=vals.length?vals[Math.floor(vals.length*2/3)]:0;
+  const getColor=v=>{if(!v||v<=0) return'#f7f7f7';if(v<=q1) return GREENS[0];if(v<=q2) return GREENS[1];return GREENS[2];};
+
+  if(!mapInstance){
+    const el = document.getElementById('map-leaflet');
+    el.style.height = '500px';
+    el.style.width  = '100%';
+    mapInstance = L.map('map-leaflet', {
+      zoomControl:true,
+      attributionControl:true,
+      zoomSnap:0.25,
+      zoomDelta:0.5
+    });
+    
+    mapInstance.setView([23.8, -102.5], 5);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution:'&copy; <a href="https://carto.com/">CARTO</a>',
+      subdomains:'abcd', maxZoom:14
+    }).addTo(mapInstance);
+  }
+
+  if(geoLayer){ geoLayer.remove(); geoLayer = null; }
+
+  if(!geoJSON){
+    
+    if(!renderMap._retries) renderMap._retries = 0;
+    renderMap._retries++;
+    if(renderMap._retries <= 8){
+      const delay = Math.min(500 * renderMap._retries, 3000);
+      document.getElementById('geo-status').textContent = '⏳ Cargando geometrías… (intento '+renderMap._retries+')';
+      setTimeout(()=>renderMap(lastFilteredData), delay);
+    } else {
+      document.getElementById('geo-status').textContent = '⚠ Error cargando geometrías. Recarga la página.';
+      renderMap._retries = 0;
+    }
+    return;
+  }
+  renderMap._retries = 0;
+
+  geoLayer = L.geoJSON(geoJSON, {
+    style: feat => {
+      const cve = String(feat.properties.CVE_ENT||'').padStart(2,'0');
+      const nom = feat.properties.NOMGEO||'';
+      const fEntidad = document.getElementById('f-ent').value;
+      const isSelected = fEntidad && nom === fEntidad;
+      if(isSelected){
+        return { fillColor:'#FFD600', weight:3, color:'#B8860B', opacity:1, fillOpacity:.95 };
+      }
+      return { fillColor:getColor(agg[cve]||0), weight:1, color:'#666', opacity:.9, fillOpacity:.82 };
+    },
+    onEachFeature: (feat, layer) => {
+      const cve = String(feat.properties.CVE_ENT||'').padStart(2,'0');
+      const val = agg[cve]||0;
+      const nom = feat.properties.NOMGEO||cve;
+      layer.bindTooltip('<strong>'+nom+'</strong><br>'+varLabel+': <b>'+val.toLocaleString('es-MX')+'</b>',{sticky:true});
+      layer.on({
+        mouseover: e => { e.target.setStyle({weight:2.5,color:'#222',fillOpacity:.95}); },
+        mouseout:  e => { if(geoLayer) geoLayer.resetStyle(e.target); },
+        click: e => {
+          const nomEnt = feat.properties.NOMGEO || '';
+          const selEnt = document.getElementById('f-ent');
+          
+          if(selEnt.value === nomEnt){
+            selEnt.value = '';
+          } else {
+            
+            let found = false;
+            for(let i=0;i<selEnt.options.length;i++){
+              if(selEnt.options[i].value === nomEnt || selEnt.options[i].text === nomEnt){
+                selEnt.selectedIndex = i;
+                found = true;
+                break;
+              }
+            }
+            if(!found) selEnt.value = '';
+          }
+          applyFilters();
+        }
+      });
+    }
+  }).addTo(mapInstance);
+
+  
+  function autoFit(){
+    mapInstance.invalidateSize();
+    if(!geoLayer) return;
+    const b = geoLayer.getBounds();
+    if(!b || !b.isValid()) return;
+    const el  = document.getElementById('map-leaflet');
+    const pad = Math.round(Math.min(el.offsetWidth, el.offsetHeight) * 0.04);
+    mapInstance.fitBounds(b, {
+      padding: [pad, pad],
+      maxZoom: 8
+    });
+  }
+  
+  setTimeout(autoFit, 80);
+  setTimeout(autoFit, 300);
+  setTimeout(autoFit, 700);
+
+  
+  const varTitles={
+    ta:'Puestos de Trabajo Afiliados',
+    t_perm:'Puestos de Trabajo Permanentes',
+    t_even:'Puestos de Trabajo Eventuales'
+  };
+
+  
+  const entVals = Object.entries(agg).filter(([,v])=>v>0).sort((a,b)=>a[1]-b[1]);
+  const totalConDatos = entVals.length;
+  const totalSinDatos = (geoJSON ? geoJSON.features.length : 32) - totalConDatos;
+
+  
+  function rangoClase(minV, maxV){
+    const inRange = entVals.filter(([,v])=>v>=minV&&v<=maxV);
+    const count   = inRange.length;
+    const rMin    = inRange.length ? inRange[0][1] : minV;
+    const rMax    = inRange.length ? inRange[inRange.length-1][1] : maxV;
+    return { count, rMin, rMax };
+  }
+
+  const r1 = rangoClase(0, q1);
+  const r2 = rangoClase(q1+1, q2);
+  const r3 = rangoClase(q2+1, Infinity);
+
+  const clases = [
+    { color: GREENS[0], rMin: r1.rMin, rMax: r1.rMax, count: r1.count },
+    { color: GREENS[1], rMin: r2.rMin, rMax: r2.rMax, count: r2.count },
+    { color: GREENS[2], rMin: r3.rMin, rMax: r3.rMax, count: r3.count },
+  ];
+
+  const floatLeg = document.getElementById('map-legend-float');
+  const legTitle = document.getElementById('map-leg-title');
+  const legRows  = document.getElementById('map-leg-rows');
+  if(floatLeg && legTitle && legRows){
+    legTitle.textContent = varTitles[varKey] || varKey;
+    legRows.innerHTML =
+      clases.map(cl=>`
+        <div class="leg-row" style="align-items:flex-start;gap:.5rem;margin-bottom:.35rem">
+          <span class="leg-swatch2" style="background:${cl.color};margin-top:3px;flex-shrink:0"></span>
+          <span style="flex:1;font-size:.65rem;line-height:1.35;color:#2E6B2E">
+            ${cl.rMin.toLocaleString('es-MX')} – ${cl.rMax.toLocaleString('es-MX')}
+            <span style="display:inline-block;margin-left:3px;color:#0F2D1A;font-weight:500">[${cl.count}]</span>
+          </span>
+        </div>`
+      ).join('') +
+      `<div class="leg-row" style="align-items:flex-start;gap:.5rem;margin-top:.1rem">
+        <span class="leg-swatch2" style="background:#f5f5f5;border:1px solid #ccc;margin-top:3px;flex-shrink:0"></span>
+        <span style="font-size:.65rem;color:#888;flex:1">
+          Sin datos
+          <span style="margin-left:3px;color:#555;font-weight:500">[${totalSinDatos}]</span>
+        </span>
+      </div>`;
+    floatLeg.style.display = 'block';
+  }
+}
+
+let hmType = 'mes';
+
+function setHmType(tipo){
+  hmType = tipo;
+  const btnMes   = document.getElementById('hm-btn-mes');
+  const btnAnual = document.getElementById('hm-btn-anual');
+  if(btnMes && btnAnual){
+    if(tipo === 'mes'){
+      btnMes.style.background   = '#2E6B2E'; btnMes.style.color   = '#fff';
+      btnAnual.style.background = 'var(--white)'; btnAnual.style.color = '#2E6B2E';
+    } else {
+      btnAnual.style.background = '#2E6B2E'; btnAnual.style.color   = '#fff';
+      btnMes.style.background   = 'var(--white)'; btnMes.style.color = '#2E6B2E';
+    }
+  }
+  renderHeatmap();
+}
+
+function renderHeatmap(){
+  const varKey  = document.getElementById('hm-var').value;
+  const isMes   = hmType === 'mes';
+  const MSHORT  = ['','ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+  const MFULL   = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+  
+  const hmEnt = document.getElementById('f-ent').value;
+  const hmBase = hmEnt ? allData.filter(d => d.entidad === hmEnt) : allData;
+  const hmTitle = hmEnt ? hmEnt : 'Nacional';
+  const agg = {};
+  hmBase.forEach(d => {
+    const a = String(d.anio), m = parseInt(d.mes);
+    agg[a+'_'+m] = (agg[a+'_'+m]||0) + n(d[varKey]);
+  });
+
+  const years = [...new Set(allData.map(d=>String(d.anio)))].sort();
+
+  
+  function getVarMes(yr, m){
+    const curr = agg[yr+'_'+m];
+    if(curr===undefined||curr===null) return null;
+    let pA = parseInt(yr), pM = m-1;
+    if(pM===0){pM=12; pA--;}
+    const prev = agg[pA+'_'+pM];
+    if(!prev||prev===0) return null;
+    return ((curr-prev)/prev)*100;
+  }
+
+  
+  function getVarAnual(yr, m){
+    const curr = agg[yr+'_'+m];
+    if(curr===undefined||curr===null) return null;
+    const prev = agg[(parseInt(yr)-1)+'_'+m];
+    if(!prev||prev===0) return null;
+    return ((curr-prev)/prev)*100;
+  }
+
+  const getVar = isMes ? getVarMes : getVarAnual;
+
+  function hmCls(v){
+    if(v===null) return 'hm-nodata';
+    if(Math.abs(v)<0.001) return 'hm-zero';
+    if(v> 6)  return 'hm-g3';
+    if(v> 3)  return 'hm-g2';
+    if(v>=0)  return 'hm-g1';
+    if(v<-6)  return 'hm-r3';
+    if(v<-3)  return 'hm-r2';
+    return 'hm-r1';
+  }
+
+  const fAnio = document.getElementById('f-anio').value;
+  const fMes  = parseInt(document.getElementById('f-mes').value)||0;
+  const tipoLbl = isMes ? 'mensual vs mes anterior' : 'anual vs mismo mes año anterior';
+
+  
+  let html = '<div class="hm-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table class="hm-table"><thead><tr>';
+  html += '<th style="text-align:left;padding-right:.8rem">AÑO</th>';
+  for(let m=1;m<=12;m++) html+=`<th>${MSHORT[m]}</th>`;
+  html += '<th style="color:#0F2D1A;padding-left:6px;border-left:3px solid rgba(46,107,46,.3)">PROM.</th></tr></thead><tbody>';
+
+  years.forEach(yr=>{
+    
+    const firstYear = years[0];
+    html += `<tr><td class="hm-year">${yr}</td>`;
+    let sum=0, cnt=0;
+    for(let m=1;m<=12;m++){
+      const v  = getVar(yr, m);
+      const cl = hmCls(v);
+      const txt= v!==null ? (v>=0?'+':'')+v.toFixed(2) : '—';
+      const sel= (fAnio===yr&&fMes===m) ? ' hm-selected' : '';
+      const tip= v!==null
+        ? `title="${MFULL[m]} ${yr}: ${v>=0?'+':''}${v.toFixed(2)}% (${tipoLbl})"`
+        : `title="${MFULL[m]||m} ${yr}: sin dato"`;
+      html+=`<td class="hm-cell ${cl}${sel}" ${tip}>${txt}</td>`;
+      if(v!==null){sum+=v;cnt++;}
+    }
+    const avg   = cnt>0?sum/cnt:null;
+    const avgTxt= avg!==null?(avg>=0?'+':'')+avg.toFixed(2):'—';
+    const avgCl = hmCls(avg);
+    html+=`<td class="hm-cell hm-avg-cell hm-prom-sep ${avgCl}" title="Promedio ${yr}: ${avgTxt}%">${avgTxt}</td>`;
+    html+='</tr>';
+  });
+
+  html += '</tbody></table></div>';
+
+  
+  html += `<div class="hm-scale-row">
+    <span style="color:#0F2D1A;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-right:.2rem">Escala:</span>
+    <div class="hm-scale-chip"><span class="hm-scale-dot" style="background:#5C1A0A"></span><span style="color:#5C1A0A">&lt; -6</span></div>
+    <div class="hm-scale-chip"><span class="hm-scale-dot" style="background:#C1440E"></span><span style="color:#C1440E">-3.01 a -6</span></div>
+    <div class="hm-scale-chip"><span class="hm-scale-dot" style="background:#FCBFA1"></span><span style="color:#C1440E">0 a -3</span></div>
+    <div class="hm-scale-chip"><span class="hm-scale-dot" style="background:#f0f0f0;border:1px solid #ccc"></span><span style="color:#999">Sin dato</span></div>
+    <div class="hm-scale-chip"><span class="hm-scale-dot" style="background:#7BBF44"></span><span style="color:#2E6B2E">0 a +3</span></div>
+    <div class="hm-scale-chip"><span class="hm-scale-dot" style="background:#2E6B2E"></span><span style="color:#2E6B2E">+3.01 a +6</span></div>
+    <div class="hm-scale-chip"><span class="hm-scale-dot" style="background:#0F2D1A"></span><span style="color:#0F2D1A">&gt; +6</span></div>
+    <span style="margin-left:auto;color:var(--muted);font-size:.62rem" id="hm-sel-info">&nbsp;</span>
+  </div>`;
+
+  document.getElementById('heatmap-container').innerHTML = html;
+
+  const hmSel = document.getElementById('hm-sel-info');
+  if(hmSel){
+    const tipTxt = (isMes?'Variación mensual':'Variación anual')+' · '+hmTitle;
+    if(fAnio&&fMes) hmSel.textContent = tipTxt+' · '+MFULL[fMes]+' '+fAnio+' (borde negro)';
+    else if(fAnio)  hmSel.textContent = tipTxt+' · Año: '+fAnio;
+    else            hmSel.textContent = tipTxt;
+  }
+}
+
+window.addEventListener('DOMContentLoaded',()=>{ init(); });
+window.addEventListener('resize',()=>{ if(mapInstance) mapInstance.invalidateSize(); });
+</script>
+</body>
+</html>
